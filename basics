@@ -1,0 +1,34 @@
+import os
+os.environ['PYTHONPATH'] += ":/my_project"
+
+import pandas as pd
+data = pd.read_csv('data.csv') # Load data
+data = data.dropna() # Remove missing values
+
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+clf = RandomForestClassifier()
+clf.fit(X_train, y_train)
+
+from rasa.nlu.training_data import load_data
+from rasa.nlu.config import RasaNLUModelConfig
+from rasa.nlu.model import Trainer
+from rasa.nlu import config
+
+training_data = load_data('training_data.json') 
+trainer = Trainer(config.load("config_spacy.yml")) 
+model_directory = trainer.persist('./models/nlu', fixed_model_name='current')
+
+import pytest
+predictions = clf.predict(X_test)
+print(classification_report(y_test, predictions))
+
+git add .
+git commit -m "Initial commit"
+git push heroku master
+
+new_data = pd.read_csv('new_data.csv')
+new_data = new_data.dropna()
+clf.fit(new_data)
